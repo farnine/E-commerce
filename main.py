@@ -2,6 +2,7 @@ from fastapi import FastAPI
 from src.utils.db import Base,engine
 from src.user.models import UserModel
 from src.user.routers import user_routes
+from src.tasks.models import ProductModel,OrderModel,CartModel,OrderItemsModel,CartItemsModel,CatagoryModel
 
 Base.metadata.create_all(engine)
 
