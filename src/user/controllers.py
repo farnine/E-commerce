@@ -28,6 +28,7 @@ def password_Validation(password,re_password):
 
 def register_user(body:UserSchema, db:Session):
     is_user=db.query(UserModel).filter(UserModel.username==body.username).first()
+
     if is_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already Exist" )
     is_email=db.query(UserModel).filter(UserModel.email==body.email).first()
@@ -44,12 +45,16 @@ def register_user(body:UserSchema, db:Session):
         fullname=body.fullname,
         username=body.username,
         hash_password=hash_password,
-        email=body.email
+        email=body.email,
+        is_admin=body.is_admin
     )
+
+   
 
     db.add(data)
     db.commit()
     db.refresh(data)
+
     return data
 
 

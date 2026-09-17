@@ -8,6 +8,7 @@ class UserSchema(BaseModel):
     password:str
     re_password:str
     email:str
+    is_admin:bool = False
 
 
 class UserResponseSchema(BaseModel):
@@ -16,6 +17,7 @@ class UserResponseSchema(BaseModel):
     username:str
     
     email:str
+    is_admin:bool
     created_at: datetime
     updated_at:datetime
 

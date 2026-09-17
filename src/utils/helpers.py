@@ -10,7 +10,7 @@ from .db import get_db
 
 
 
-def is_auth(request:Request, db:Session= Depends(Session)):
+def auth(request:Request, db:Session= Depends(get_db)):
     try:
         raw_token=request.headers.get("authorization")
         if not raw_token:
