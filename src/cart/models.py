@@ -15,8 +15,8 @@ class CartItemsModel(Base):
     __tablename__="cartitems"
 
     id=Column(Integer, primary_key=True)
-    product_id=Column(Integer, ForeignKey("products.id"),unique=True)
+    product_id=Column(Integer, ForeignKey("products.id",ondelete="CASCADE"))
     price=Column(Integer)
-    cart_id=Column(Integer, ForeignKey("cart.id"))
+    cart_id=Column(Integer, ForeignKey("cart.id", ondelete="CASCADE"))
 
     quantity=Column(Integer)
