@@ -61,6 +61,6 @@ def delete_product(product_id:int, db:Session, user:UserModel):
 
     db.delete(data)
     db.commit()
-    db.refresh(data)
+    
 
     return None
