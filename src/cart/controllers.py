@@ -1,10 +1,46 @@
 from fastapi import HTTPException,status
 from sqlalchemy.orm import Session
-from .dtos import CartItemsSchema
+from .dtos import CartItemsSchema,CartSchema
 from src.tasks.models import ProductModel
-from .models import CartItemsModel
+from .models import CartItemsModel,CartModel
+from src.user.models import UserModel
 
 
+#Cart Logic 
+
+def create_cart(db:Session, user:UserModel):
+    is_user=db.query(CartModel).filter(CartModel.user_id==user.id).first()
+    if is_user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="User already Found")
+
+    data= CartModel(
+        user_id=user.id
+    )
+    db.add(data)
+    db.commit()
+    db.refresh(data)
+
+    return data
+
+
+def get_all_items(db:Session, user:UserModel):
+
+    cart= db.query(CartModel).filter(user.id==CartModel.user_id).first()
+    
+    if not cart:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cart Not Found")
+    items=db.query(CartItemsModel).filter(CartItemsModel.cart_id==cart.id).all()
+
+    return {
+        "id":cart.id,
+        "items":items
+    }
+
+
+
+
+
+# CartItems logic
 def get_all(db:Session):
     data=db.query(CartItemsModel).all()
 
@@ -21,6 +57,10 @@ def get_one(cartItem_id: int, db:Session):
 
 
 def create(body:CartItemsSchema, db:Session):
+    cart= db.query(CartModel).filter(CartModel.id == body.cart_id).first()
+    if not cart:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cart Not found")
+    
     product=db.query(ProductModel).get(body.product_id)
 
     if not product:

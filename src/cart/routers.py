@@ -2,11 +2,28 @@ from fastapi import APIRouter,status,Depends
 from sqlalchemy.orm import Session 
 from src.utils.db import get_db
 from . import controllers
-from .dtos import CartItemsSchema,CartItemsResponseSchema
+from .dtos import CartItemsSchema,CartItemsResponseSchema, CartResponseSchema,CartSchema,CartAllResponseSchema
+from src.utils.helpers import auth
+from src.user.models import UserModel
+
+cart_routes=APIRouter(prefix="/products")
+
+#Cart Endpoints
+
+@cart_routes.post("/cart", response_model=CartResponseSchema, status_code=status.HTTP_201_CREATED)
+def create_cart_routes( db:Session= Depends(get_db), user:UserModel= Depends(auth)):
+    return controllers.create_cart(db,user)
 
 
-cart_routes=APIRouter("/products")
+@cart_routes.get("/cart", status_code=status.HTTP_200_OK)
+def cart_get_all_routes(db:Session=Depends(get_db),user:UserModel= Depends(auth)):
+    return controllers.get_all_items(db,user)
 
+
+
+
+
+# CartItems Endpoints
 
 @cart_routes.get(
     "/cart-items",
