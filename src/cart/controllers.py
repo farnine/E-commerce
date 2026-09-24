@@ -65,6 +65,19 @@ def create(body:CartItemsSchema, db:Session):
 
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product Not found")
+    if body.quantity>product.stock:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Quantity must be less ")
+    check_cartitems= db.query(CartItemsModel).filter(CartItemsModel.product_id==product.id).first()
+    if check_cartitems:
+        body_dict=body.model_dump()
+        for key,val in body_dict.items():
+            setattr(check_cartitems,key,val)
+
+        db.add(check_cartitems)
+        db.commit()
+        db.refresh(check_cartitems)
+
+        return check_cartitems
 
     data= CartItemsModel(
         product_id=product.id,

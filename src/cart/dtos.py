@@ -1,4 +1,4 @@
-from pydantic import BaseModel 
+from pydantic import BaseModel, field_validator
 from datetime import datetime
 #Cart Schema's
 
@@ -24,6 +24,15 @@ class CartItemsSchema(BaseModel):
     price:int
     cart_id:int
     quantity:int
+
+    @field_validator("quantity")
+    @classmethod
+    def check_quantity(cls, val:int)->int:
+        if val<=0:
+            raise ValueError("Quantity cannot zero")
+        return val
+
+
 
 class CartItemsResponseSchema(BaseModel):
 
