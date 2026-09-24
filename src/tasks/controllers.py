@@ -20,10 +20,13 @@ def create_product(body:ProductSchema, db:Session,user: UserModel):
     user_data=db.query(UserModel).filter(UserModel.id==user.id).first()
     
     if user_data.is_admin:
+       
+
         data= ProductModel(
             name=body.name,
             description=body.description,
             price=body.price,
+            stock=body.stock,
             is_available=body.is_available,
         )
         db.add(data)
