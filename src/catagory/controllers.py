@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from .dtos import CatagorySchema
 from .models import CatagoryModel
 from src.user.models import UserModel
+from src.tasks.models import ProductModel
 
 def get_all(db:Session):
     data= db.query(CatagoryModel).all()
@@ -49,7 +50,14 @@ def delete_catagory(catagories_id:int, db:Session, user:UserModel):
         data= db.query(CatagoryModel).get(catagories_id)
         if not data:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-
+        check_products= db.query(ProductModel).filter(
+            catagories_id==ProductModel.catagory_id
+            )
+        if check_products:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, 
+                detail="Products present in the catagory"
+                )
         db.delete(data)
         db.commit()
         

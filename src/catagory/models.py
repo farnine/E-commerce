@@ -5,7 +5,7 @@ class CatagoryModel(Base):
     __tablename__="catagories"
 
     id=Column(Integer, primary_key=True)
-    name=Column(String, nullable=False)
+    name=Column(String, nullable=False, unique=True)
     description=Column(String)
     created_at=Column(DateTime(timezone=True), server_default=func.now())
     
