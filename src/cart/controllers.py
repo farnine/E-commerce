@@ -36,6 +36,10 @@ def get_all_items(db:Session, user:UserModel):
         "items":items
     }
 
+def clear_cart(db:Session, user:UserModel):
+    pass
+    
+
 
 
 
@@ -43,8 +47,6 @@ def get_all_items(db:Session, user:UserModel):
 # CartItems logic
 def get_all(db:Session):
     data=db.query(CartItemsModel).all()
-
-
     return data
 
 def get_one(cartItem_id: int, db:Session):
@@ -56,33 +58,37 @@ def get_one(cartItem_id: int, db:Session):
 
 
 
-def create(body:CartItemsSchema, db:Session):
+def create(body:CartItemsSchema, db:Session,user:UserModel):
     cart= db.query(CartModel).filter(CartModel.id == body.cart_id).first()
     if not cart:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cart Not found")
-    
-    product=db.query(ProductModel).get(body.product_id)
+    if user.id != cart.user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="not authorized")
 
+    product=db.query(ProductModel).filter(ProductModel.id == body.product_id).first()
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product Not found")
-    if body.quantity>product.stock:
+    if body.quantity > product.stock:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Quantity must be less ")
-    check_cartitems= db.query(CartItemsModel).filter(CartItemsModel.product_id==product.id).first()
+
+    check_cartitems = db.query(CartItemsModel).filter(
+        CartItemsModel.cart_id == cart.id,
+        CartItemsModel.product_id == product.id,
+    ).first()
     if check_cartitems:
-        body_dict=body.model_dump()
-        for key,val in body_dict.items():
-            setattr(check_cartitems,key,val)
+        check_cartitems.quantity += body.quantity
+        if check_cartitems.quantity > product.stock:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Quantity must be less ")
 
         db.add(check_cartitems)
         db.commit()
         db.refresh(check_cartitems)
-
         return check_cartitems
 
     data= CartItemsModel(
         product_id=product.id,
         price=product.price,
-        cart_id=body.cart_id,
+        cart_id=cart.id,
         quantity=body.quantity
     )
 
@@ -91,12 +97,25 @@ def create(body:CartItemsSchema, db:Session):
     db.refresh(data)
     return data
 
-def update(cartItem_id: int,body:CartItemsSchema, db:Session):
+def update(cartItem_id: int,body:CartItemsSchema, db:Session,user:UserModel):
     instance=db.query(CartItemsModel).get(cartItem_id)
     if not instance:
-        raise HTTPException( status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
-    body_dict=body.model_dump()
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 
+    cart=db.query(CartModel).get(instance.cart_id)
+    if not cart:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cart Not found")
+    if user.id != cart.user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorizesd")
+
+    target_product_id = body.product_id if body.product_id else instance.product_id
+    product = db.query(ProductModel).filter(ProductModel.id == target_product_id).first()
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product Not found")
+    if body.quantity > product.stock:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Quantity must be less ")
+
+    body_dict = body.model_dump(exclude_unset=True)
     for key,val in body_dict.items():
         setattr(instance,key, val)
 
@@ -106,10 +125,15 @@ def update(cartItem_id: int,body:CartItemsSchema, db:Session):
 
     return instance
 
-def removeItem(cartItem_id,db:Session):
+def removeItem(cartItem_id,db:Session,user:UserModel):
     data=db.query(CartItemsModel).get(cartItem_id)
     if not data:
-        raise HTTPException( status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
+    cart=db.query(CartModel).get(data.cart_id)
+    if not cart:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Cart Not found")
+    if user.id != cart.user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Unauthorizesd")
 
     db.delete(data)
     db.commit()

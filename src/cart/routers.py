@@ -19,7 +19,9 @@ def create_cart_routes( db:Session= Depends(get_db), user:UserModel= Depends(aut
 def cart_get_all_routes(db:Session=Depends(get_db),user:UserModel= Depends(auth)):
     return controllers.get_all_items(db,user)
 
-
+@cart_routes.delete("/cart", status_code=status.HTTP_204_NO_CONTENT, response_model=None)
+def clear_cart_routes(db:Session= Depends(get_db), user:UserModel=Depends(auth)):
+    return controllers.clear_cart(db,user)
 
 
 
@@ -48,8 +50,8 @@ def get_one_routes(cartItem_id:int,db=Depends(get_db)):
         status_code=status.HTTP_201_CREATED,
         response_model=CartItemsResponseSchema
         )
-def create_route(body:CartItemsSchema, db:Session= Depends(get_db)):
-    return controllers.create(body, db)
+def create_route(body:CartItemsSchema, db:Session= Depends(get_db), user:UserModel= Depends(auth)):
+    return controllers.create(body, db,user)
 
 
 @cart_routes.put(
@@ -57,13 +59,13 @@ def create_route(body:CartItemsSchema, db:Session= Depends(get_db)):
     response_model=CartItemsResponseSchema,
     status_code=status.HTTP_201_CREATED
     )
-def update_routes(cartItem_id:int,body:CartItemsSchema, db=Depends(get_db)):
-    return controllers.update(cartItem_id,body,db)
+def update_routes(cartItem_id:int,body:CartItemsSchema, db:Session=Depends(get_db),user:UserModel= Depends(auth)):
+    return controllers.update(cartItem_id,body,db,user)
 
 @cart_routes.delete(
     "/cart-items/{cartItem_id}",
     response_model=None,
     status_code=status.HTTP_204_NO_CONTENT
     )
-def update_routes(cartItem_id:int,body:CartItemsSchema, db=Depends(get_db)):
-    return controllers.removeItem(cartItem_id,body,db)
+def delete_routes(cartItem_id:int, db:Session=Depends(get_db), user:UserModel= Depends(auth)):
+    return controllers.removeItem(cartItem_id, db, user)
