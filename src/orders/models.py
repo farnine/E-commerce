@@ -1,5 +1,5 @@
 from src.utils.db import Base
-from sqlalchemy import Column,String,Integer,DateTime,ForeignKey,func
+from sqlalchemy import Column,String,Integer,DateTime,ForeignKey,func,Float
 
 
 
@@ -11,7 +11,8 @@ class OrderItemsModel(Base):
     id=Column(Integer, primary_key=True)
     product_id=Column(Integer, ForeignKey("products.id", ondelete="CASCADE"))
     order_id=Column(Integer, ForeignKey("order.id", ondelete="CASCADE"))
-    price=Column(Integer)
+    price=Column(Float, nullable=False)
+    quantity=Column(Integer, nullable=False)
 
 
 class OrderModel(Base):
@@ -20,7 +21,7 @@ class OrderModel(Base):
     id= Column(Integer, primary_key=True)
     user_id=Column(Integer, ForeignKey("users.id", ondelete="CASCADE"))
     status=Column(String, default="Pending")
-    total_price= Column(Integer, nullable=False)
+    total_price= Column(Float, nullable=False)
 
 
 

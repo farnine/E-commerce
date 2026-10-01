@@ -1,5 +1,5 @@
 from src.utils.db import Base
-from sqlalchemy import Column,String,Integer,func,DateTime,ForeignKey
+from sqlalchemy import Column,String,Integer,func,DateTime,ForeignKey,Float
 
 
 
@@ -16,7 +16,7 @@ class CartItemsModel(Base):
 
     id=Column(Integer, primary_key=True)
     product_id=Column(Integer, ForeignKey("products.id",ondelete="CASCADE"))
-    price=Column(Integer)
+    price=Column(Float, nullable=False)
     cart_id=Column(Integer, ForeignKey("cart.id", ondelete="CASCADE"))
 
-    quantity=Column(Integer)
+    quantity=Column(Integer, nullable=False)

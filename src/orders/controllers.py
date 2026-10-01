@@ -18,8 +18,7 @@ def create_orders(db:Session, user:UserModel):
     if not items:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Items not found")
 
-    
-    total_price=0
+    total_price=0.0
 
     # Check: Product avialibility, Compare Quantity with Stock, Calculate total Price
     for item in items:
@@ -31,12 +30,12 @@ def create_orders(db:Session, user:UserModel):
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"{product.name} not available")
         if item.quantity> product.stock:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=f"Not enough stock of {product.name} is available")
-        total_price+=item.price*item.quantity
+        total_price += float(item.price) * item.quantity
 
     #Create order
     order=OrderModel(
         user_id=user.id,
-        total_price=total_price
+        total_price=float(total_price)
     )
     db.add(order)
     # Get order.id before creating OrderItems
@@ -47,12 +46,14 @@ def create_orders(db:Session, user:UserModel):
         order_item=OrderItemsModel(
             product_id=item.product_id,
             order_id=order.id,
-            price=item.price
+            price=float(item.price),
+            quantity=item.quantity
         )
         db.add(order_item)
-        
 
-        product.stock-=item.quantity
+        product = db.query(ProductModel).filter(ProductModel.id == item.product_id).first()
+        if product:
+            product.stock -= item.quantity
 
     #Clear Cart
     for item in items:
