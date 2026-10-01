@@ -9,6 +9,7 @@ from src.tasks.routers import task_routes
 from src.catagory.models import CatagoryModel
 from src.catagory.routers import catagory_routes
 from src.cart.routers import cart_routes
+from src.orders.routers import order_routes
 
 
 Base.metadata.create_all(engine)
@@ -20,3 +21,4 @@ app.include_router(user_routes)
 app.include_router(task_routes)
 app.include_router(catagory_routes)
 app.include_router(cart_routes)
+app.include_router(order_routes)

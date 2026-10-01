@@ -17,7 +17,7 @@ class ProductSchema(BaseModel):
     
     @field_validator("stock")
     @classmethod
-    def check_negative(cls, val: int)-> int:
+    def check_stock_negative(cls, val: int)-> int:
         if val<0:
             raise ValueError("Stock cannot be negative")
         return val
