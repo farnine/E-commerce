@@ -68,6 +68,8 @@ def create(body:CartItemsSchema, db:Session,user:UserModel):
     product=db.query(ProductModel).filter(ProductModel.id == body.product_id).first()
     if not product:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Product Not found")
+    if product.price!=body.price:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=" Prcce is less the listed amount ")
     if body.quantity > product.stock:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Quantity must be less ")
 

@@ -9,12 +9,15 @@ from .models import OrderItemsModel,OrderModel
 def create_orders(db:Session, user:UserModel):
     # Check if the Cart is present
     cart= db.query(CartModel).filter(CartModel.user_id==user.id).first()
+    print(cart.id)
 
     if not cart:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Not found")
 
     # Check if the cart-items is present
+    
     items=db.query(CartItemsModel).filter(CartItemsModel.cart_id==cart.id).all()
+
     if not items:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Items not found")
 
@@ -65,5 +68,41 @@ def create_orders(db:Session, user:UserModel):
 
     return order
 
+
+# View Orders
+
+def view_order(db:Session, user:UserModel):
     
-     
+    order= db.query(OrderModel).filter(OrderModel.user_id==user.id).all()
+    
+
+    if not order:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, 
+            detail="Order not found"
+        )
+    return order
+
+def view_single_order(order_id:int, db:Session, user:UserModel):
+    order=db.query(OrderModel).filter(
+        OrderModel.id==order_id,
+        OrderModel.user_id==user.id
+    ).first()
+
+    if not order:
+        raise HTTPException(status_code= status.HTTP_404_NOT_FOUND, detail="Order not found")
+
+    return order
+
+
+def cancel_order(order_id:int, db:Session, user:UserModel):
+    order= db.query(OrderModel).filter(OrderModel.id==order_id).first()
+
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+
+    db.delete(order)
+    db.commit()
+
+    return None
+
